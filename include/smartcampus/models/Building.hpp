@@ -10,30 +10,38 @@ namespace smartcampus {
 
 /**
  * @brief Abstract base class representing any physical building on campus.
- * Demonstrates:
- * - Data abstraction and encapsulation
- * - Virtual destructor for polymorphic deletion
- * - Pure virtual functions
- * - Static member variables and methods
- * - Disallowed copy semantics to avoid object slicing
+ *
+ * KEY OOP CONCEPTS DEMONSTRATED:
+ * 1. Data Abstraction & Encapsulation (private fields, public getters/methods)
+ * 2. Virtual Destructor (safe polymorphic cleanup)
+ * 3. Pure Virtual Functions (defines an abstract interface)
+ * 4. Static Members (shared active building counter)
+ * 5. Const Correctness (immutability guarantees)
+ * 6. Operator Overloading (stream insertion <<)
  */
 class Building {
+    // =========================================================================
+    // OOP CONCEPT 1: ENCAPSULATION & DATA HIDING
+    // Private variables cannot be accessed or corrupted from outside this class.
+    // =========================================================================
 private:
     std::string m_id;
     std::string m_name;
     BuildingCategory m_category;
     PriorityLevel m_priority;
 
-    double m_essentialDemand;       // Non-deferrable demand (kWh)
-    double m_discretionaryDemand;   // Flexible comfort/utility demand (kWh)
+    double m_essentialDemand;       // Non-deferrable critical demand (kWh)
+    double m_discretionaryDemand;   // Flexible utility/comfort demand (kWh)
     double m_allocatedEnergy;       // Currently allocated energy in time slot (kWh)
 
-    static int s_activeBuildingCount; // Tracks active building instances
+    // =========================================================================
+    // OOP CONCEPT 2: STATIC MEMBER VARIABLE
+    // Shared by all instances of Building to track active object count.
+    // =========================================================================
+    static int s_activeBuildingCount;
 
 protected:
-    /**
-     * @brief Protected constructor for derived classes.
-     */
+    // Protected constructor: only derived classes can construct a Building
     Building(std::string id,
              std::string name,
              BuildingCategory category,
@@ -41,21 +49,28 @@ protected:
              double essentialDemand,
              double discretionaryDemand);
 
-    // Protected setter for derived classes to manage allocation state
+    // Protected setter: allows derived classes to safely update allocation
     void setAllocatedEnergy(double kwh);
 
 public:
+    // =========================================================================
+    // OOP CONCEPT 3: VIRTUAL DESTRUCTOR
+    // Essential for polymorphic base classes so derived objects delete cleanly.
+    // =========================================================================
     virtual ~Building();
 
-    // Disable copy constructor and copy assignment to prevent polymorphic slicing
+    // Prevent object slicing by disabling copy semantics on polymorphic base
     Building(const Building&) = delete;
     Building& operator=(const Building&) = delete;
 
-    // Enable move semantics
+    // Enable move semantics for efficient ownership transfers
     Building(Building&&) noexcept = default;
     Building& operator=(Building&&) noexcept = default;
 
-    // Getters with const correctness
+    // =========================================================================
+    // OOP CONCEPT 4: CONST CORRECTNESS
+    // Guarantees getters do not mutate object state.
+    // =========================================================================
     const std::string& getId() const { return m_id; }
     const std::string& getName() const { return m_name; }
     BuildingCategory getCategory() const { return m_category; }
@@ -70,21 +85,26 @@ public:
     FulfillmentStatus getFulfillmentStatus() const;
     EnergyAllocation getAllocationSummary() const;
 
-    // Setters with validation
+    // Setter with input validation (throws NegativeEnergyException if negative)
     void setDemands(double essential, double discretionary);
     void setPriority(PriorityLevel priority) { m_priority = priority; }
 
-    // Pure virtual functions (Runtime Polymorphism / Abstraction)
+    // =========================================================================
+    // OOP CONCEPT 5: PURE VIRTUAL FUNCTIONS (ABSTRACTION)
+    // Makes Building an abstract class; concrete derived classes MUST override.
+    // =========================================================================
     virtual std::string getTypeName() const = 0;
     virtual void allocate(double energyKwh) = 0;
 
-    // Reset allocation for a new time slot
     virtual void resetAllocation();
 
-    // Static member function
+    // Static member function accessing static counter
     static int getActiveBuildingCount() { return s_activeBuildingCount; }
 
-    // Stream insertion operator overload
+    // =========================================================================
+    // OOP CONCEPT 6: OPERATOR OVERLOADING
+    // Overloading << provides clean, readable stream printing.
+    // =========================================================================
     friend std::ostream& operator<<(std::ostream& os, const Building& b);
 };
 

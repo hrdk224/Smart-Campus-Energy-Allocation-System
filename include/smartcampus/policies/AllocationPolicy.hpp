@@ -11,11 +11,15 @@ namespace smartcampus {
 
 /**
  * @brief Strategy interface for energy allocation algorithms.
- * Demonstrates:
- * - Strategy Design Pattern
- * - Pure virtual interface
- * - Decoupling algorithm implementation from the AllocationEngine
+ *
+ * KEY OOP CONCEPTS DEMONSTRATED:
+ * 1. Strategy Design Pattern: Encapsulates swappable allocation algorithms
+ * 2. Pure Virtual Interface: Guarantees polymorphic allocate() contract
+ * 3. Open/Closed Principle: Add new policies without modifying AllocationEngine
  */
+// =============================================================================
+// OOP CONCEPT: STRATEGY PATTERN & PURE ABSTRACT INTERFACE
+// =============================================================================
 class AllocationPolicy {
 public:
     virtual ~AllocationPolicy() = default;
@@ -25,9 +29,7 @@ public:
 
     /**
      * @brief Compute energy allocation for each building given available supply.
-     * @param buildings Non-owning pointers to registered campus buildings
-     * @param availableSupplyKwh Total electrical energy available for the slot
-     * @return Map of Building ID to EnergyAllocation record
+     * Runtime Polymorphism: Called via base pointer in AllocationEngine.
      */
     virtual std::map<std::string, EnergyAllocation> allocate(
         const std::vector<Building*>& buildings,

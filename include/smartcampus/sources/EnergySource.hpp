@@ -8,11 +8,11 @@ namespace smartcampus {
 
 /**
  * @brief Abstract base class for all campus power generation and storage units.
- * Demonstrates:
- * - Abstraction
- * - Virtual destructor
- * - Pure virtual functions
- * - Non-copyable polymorphic base
+ *
+ * KEY OOP CONCEPTS DEMONSTRATED:
+ * 1. Abstraction: Defines pure virtual supply() and getAvailableEnergy()
+ * 2. Virtual Destructor: Guarantees safe polymorphic cleanup
+ * 3. Encapsulation: Protected state accessible only by derived sources
  */
 class EnergySource {
 private:
@@ -25,13 +25,15 @@ protected:
     EnergySource(std::string sourceId, std::string name, double capacityKwh);
 
 public:
+    // =========================================================================
+    // OOP CONCEPT: VIRTUAL DESTRUCTOR
+    // =========================================================================
     virtual ~EnergySource() = default;
 
     // Disallow copying to prevent object slicing
     EnergySource(const EnergySource&) = delete;
     EnergySource& operator=(const EnergySource&) = delete;
 
-    // Allow moving
     EnergySource(EnergySource&&) noexcept = default;
     EnergySource& operator=(EnergySource&&) noexcept = default;
 
@@ -39,12 +41,14 @@ public:
     const std::string& getName() const { return m_name; }
     double getCapacityKwh() const { return m_capacityKwh; }
 
-    // Pure virtual methods
+    // =========================================================================
+    // OOP CONCEPT: PURE VIRTUAL FUNCTIONS (ABSTRACT CONTRACT)
+    // Concrete sources (Solar, Battery, Grid) MUST provide their own mechanics.
+    // =========================================================================
     virtual double getAvailableEnergy() const = 0;
     virtual double supply(double requestedKwh) = 0;
     virtual std::string getSourceName() const = 0;
 
-    // Virtual hook for periodic reset or replenishment
     virtual void resetForTimeSlot() {}
 
     friend std::ostream& operator<<(std::ostream& os, const EnergySource& source);

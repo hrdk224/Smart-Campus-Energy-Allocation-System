@@ -36,6 +36,9 @@ demo: build
 	@echo "=== Running Automated End-to-End Scenarios Demo ==="
 	@./$(BUILD_DIR)/campus_energy_sim --demo
 
+presentation: build
+	@./scripts/quick_presentation_demo.sh
+
 clean:
 	@rm -rf $(BUILD_DIR)
 	@echo "Cleaned build directory."

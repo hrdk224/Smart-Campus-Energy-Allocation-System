@@ -6,10 +6,17 @@
 namespace smartcampus {
 
 /**
- * @brief Represents specialized research laboratories (e.g., Chemistry, High-Performance Computing, Robotics).
- * Demonstrates Multilevel Inheritance: Building -> AcademicBuilding -> Laboratory.
- * Laboratories enforce non-negotiable critical essential baseline (fume hoods, cooling servers).
+ * @brief Represents specialized research laboratories (AI servers, chemistry labs).
+ *
+ * KEY OOP CONCEPTS DEMONSTRATED:
+ * 1. Multilevel Inheritance: Building -> AcademicBuilding -> Laboratory
+ * 2. Specialized Polymorphic Behavior: Enforces safety-critical baselines
  */
+// =============================================================================
+// OOP CONCEPT: MULTILEVEL INHERITANCE
+// Building (Grandparent) -> AcademicBuilding (Parent) -> Laboratory (Child)
+// Laboratory inherits classrooms from AcademicBuilding AND ID/demands from Building.
+// =============================================================================
 class Laboratory : public AcademicBuilding {
 private:
     int m_hazardousFumeHoods;
@@ -33,7 +40,9 @@ public:
     bool isBackupGeneratorRequired() const { return m_backupGeneratorRequired; }
     double getSafetyCriticalBaseline() const { return m_safetyCriticalBaselineKwh; }
 
-    // Overridden polymorphic methods
+    // =========================================================================
+    // OOP CONCEPT: METHOD OVERRIDING (RUNTIME POLYMORPHISM)
+    // =========================================================================
     std::string getTypeName() const override;
     void allocate(double energyKwh) override;
 };

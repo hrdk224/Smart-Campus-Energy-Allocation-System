@@ -6,9 +6,16 @@
 namespace smartcampus {
 
 /**
- * @brief Represents standard academic lecture complexes, seminar halls, and faculties.
- * Demonstrates Single Inheritance from Building.
+ * @brief Represents standard academic lecture complexes and faculties.
+ *
+ * KEY OOP CONCEPTS DEMONSTRATED:
+ * 1. Single Inheritance: AcademicBuilding inherits directly from Building
+ * 2. Method Overriding: Implements pure virtual getTypeName() and allocate()
  */
+// =============================================================================
+// OOP CONCEPT: SINGLE INHERITANCE
+// AcademicBuilding is-a Building, inheriting ID, priority, and demand state.
+// =============================================================================
 class AcademicBuilding : public Building {
 private:
     int m_classroomCount;
@@ -28,7 +35,9 @@ public:
     int getClassroomCount() const { return m_classroomCount; }
     bool hasSmartBoards() const { return m_hasSmartBoards; }
 
-    // Overridden methods
+    // =========================================================================
+    // OOP CONCEPT: RUNTIME POLYMORPHISM (OVERRIDING VIRTUAL METHODS)
+    // =========================================================================
     std::string getTypeName() const override;
     void allocate(double energyKwh) override;
 };

@@ -10,12 +10,19 @@ namespace smartcampus {
 
 /**
  * @brief Represents the physical campus managing all registered buildings.
- * Demonstrates:
- * - Composition: owns Building instances via unique_ptr
- * - Method Overloading: compile-time polymorphism for adding buildings
- * - const correctness
+ *
+ * KEY OOP CONCEPTS DEMONSTRATED:
+ * 1. Composition: Campus has-a vector of unique_ptr<Building> (exclusive ownership)
+ * 2. Smart Pointers: std::unique_ptr for automatic RAII memory management
+ * 3. Method Overloading: Compile-time polymorphism
+ * 4. Const Correctness: Read-only accessors
  */
 class Campus {
+    // =========================================================================
+    // OOP CONCEPT: COMPOSITION & SMART POINTERS
+    // Campus strictly owns the lifecycle of its Building objects via unique_ptr.
+    // If Campus is destroyed, all contained buildings are deallocated automatically.
+    // =========================================================================
 private:
     std::string m_campusName;
     std::vector<std::unique_ptr<Building>> m_buildings;
@@ -35,10 +42,9 @@ public:
     const std::string& getName() const { return m_campusName; }
     size_t getBuildingCount() const { return m_buildings.size(); }
 
-    // Method Overloading (Compile-Time Polymorphism)
     void addBuilding(std::unique_ptr<Building> building);
 
-    // Observer pointers for non-owning callers like AllocationEngine
+    // Non-owning observer pointers for allocation algorithms
     std::vector<Building*> getBuildingPointers() const;
     const std::vector<std::unique_ptr<Building>>& getBuildings() const { return m_buildings; }
 

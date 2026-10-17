@@ -12,19 +12,25 @@ namespace smartcampus {
 
 /**
  * @brief Central simulation engine executing energy allocation algorithms.
- * Demonstrates:
- * - Aggregation / Association: interacts with AllocationPolicy through its interface
- * - Invariant verification (conservation of energy, non-negativity)
- * - Encapsulation of simulation workflow
+ *
+ * KEY OOP CONCEPTS DEMONSTRATED:
+ * 1. Aggregation / Association: Works through abstract AllocationPolicy interface
+ * 2. Invariant Validation: Defensive programming and custom exception throws
+ * 3. Separation of Concerns: Coordinates Campus and Sources without owning them
  */
 class AllocationEngine {
+    // =========================================================================
+    // OOP CONCEPT: AGGREGATION & ASSOCIATION ("USES-A")
+    // AllocationEngine holds a shared pointer to AllocationPolicy.
+    // The policy can be changed dynamically at runtime via setPolicy().
+    // =========================================================================
 private:
     Campus& m_campus;
     EnergySupplyManager& m_supplyManager;
     std::shared_ptr<AllocationPolicy> m_currentPolicy;
     std::vector<AllocationRecord> m_simulationHistory;
 
-    // Internal invariant validation helper
+    // Internal invariant verification (allocated <= supply, allocated >= 0)
     void validateInvariants(double totalAllocated,
                             double availableSupply,
                             const std::map<std::string, EnergyAllocation>& allocations) const;
@@ -36,24 +42,18 @@ public:
 
     ~AllocationEngine() = default;
 
-    // Disallow copy, allow move
     AllocationEngine(const AllocationEngine&) = delete;
     AllocationEngine& operator=(const AllocationEngine&) = delete;
 
+    // =========================================================================
+    // OOP CONCEPT: DYNAMIC RUNTIME STRATEGY SWAPPING
+    // =========================================================================
     void setPolicy(std::shared_ptr<AllocationPolicy> policy);
     const AllocationPolicy& getPolicy() const;
     std::shared_ptr<AllocationPolicy> getPolicyPtr() const { return m_currentPolicy; }
 
     /**
      * @brief Execute simulation for a discrete time slot.
-     * Steps:
-     *   1. Prepare sources and campus for the slot
-     *   2. Compute total available supply
-     *   3. Run policy allocation algorithm
-     *   4. Verify all mathematical invariants
-     *   5. Physically dispatch energy from sources
-     *   6. Apply allocations to individual Building instances
-     *   7. Store and return AllocationRecord
      */
     AllocationRecord simulateTimeSlot(const TimeSlot& slot);
 
