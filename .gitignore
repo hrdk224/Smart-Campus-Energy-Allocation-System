@@ -1,31 +1,11 @@
-# CMake & Build artifacts
-build/
-bin/
-out/
-cmake-build-*/
-CMakeCache.txt
-CMakeFiles/
-cmake_install.cmake
-Makefile.cmake
-*.ninja
-*.dylib
-*.so
+# Compiled binary
+campus_sim
 *.o
-*.a
 *.dSYM/
 
-# Executables
-campus_energy_sim
-campus_energy_tests
-
-# macOS & Editor files
+# macOS files
 .DS_Store
-*.swp
-*.swo
-.vscode/
-.idea/
 
-# Simulation output reports (keep directory via .gitkeep)
-reports/*.txt
-reports/*.csv
-!reports/.gitkeep
+# Generated report and data files at runtime
+allocation_report.txt
+allocations.dat

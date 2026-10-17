@@ -1,6 +1,0 @@
-# ID,Name,Type,Priority(1-4),EssentialDemandKwh,DiscretionaryDemandKwh
-BLD-01,Turing Computing & AI Lab,Laboratory,1,40.0,30.0
-BLD-02,Raman Academic Complex,Academic,2,35.0,25.0
-BLD-03,Aryabhatta Central Library,Administrative,2,25.0,25.0
-BLD-04,Kalam Student Residence,Hostel,3,30.0,40.0
-BLD-05,Administrative Secretariat,Administrative,4,15.0,20.0

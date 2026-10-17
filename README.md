@@ -1,187 +1,196 @@
 # Smart Campus Energy Allocation System
 
-[![C++17](https://img.shields.io/badge/Language-C%2B%2B17%20%2F%20C%2B%2B20-blue.svg)](https://en.cppreference.com/w/cpp/17)
-[![Build & Tests](https://img.shields.io/badge/Tests-218%20Passing-brightgreen.svg)]()
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Architecture](https://img.shields.io/badge/Architecture-Strategy%20%7C%20Polymorphism-purple.svg)](docs/ARCHITECTURE.md)
-
-A robust, modular C++ Object-Oriented Programming (OOP) course project designed for a four-person team. The system simulates how a university campus distributes limited electrical energy across academic lecture halls, research laboratories, student hostels, libraries, and administrative complexes during discrete time intervals (e.g. 2-hour slots).
-
-Energy is sourced dynamically from **Rooftop Solar Photovoltaic Arrays**, a **Campus Battery Energy Storage System (BESS)**, and the **Municipal Power Grid**. Distribution is governed by selectable policies (**Priority-Based** and **Fair-Share Proportional**) while maintaining physical conservation invariants and generating comprehensive audit reports.
+> **A Small, Beginner-Friendly C++ Course Project for 4 Students**  
+> Covers all Units of the B.Tech Object-Oriented Programming (OOP) Syllabus without complex design patterns.
 
 ---
 
-## 1. Project Directory Layout
+## 1. Project Overview & Allocation Logic
+
+The campus has three buildings with different energy requirements and priority levels:
+1. **Campus Clinic (ID: 1):** Priority **P1** (Highest — Critical healthcare, emergency beds, ambulance bay). Requested: **40.0 kWh**.
+2. **Classroom Block (ID: 2):** Priority **P2** (Medium — Academic lecture halls, smart boards). Requested: **50.0 kWh**.
+3. **Hostel (ID: 3):** Priority **P3** (Lowest — Student residential rooms). Requested: **30.0 kWh**.
+
+**Total Campus Demand = 120.0 kWh.**
+
+### The Allocation Rule (Easy to Say in Viva):
+> **“Sort by priority, then give each building as much as possible until the supply runs out. For equal priorities, preserve original order.”**
+
+- If **Supply = 90.0 kWh** (Shortage: Solar 40 + Grid 50):
+  - Clinic (P1) gets **40.0 kWh** (Fully Met).
+  - Classroom Block (P2) gets remaining **50.0 kWh** (Fully Met).
+  - Hostel (P3) gets **0.0 kWh** (Deferred due to 30.0 kWh shortage).
+- If **Supply = 150.0 kWh** (Surplus: Solar 80 + Grid 70):
+  - All three buildings get 100% of their requested energy (120.0 kWh allocated, 0 remaining).
+
+---
+
+## 2. Repository File Structure
+
+This repository deliberately uses only a few flat, easily understood files:
 
 ```
 SmartCampusEnergyAllocation/
-├── CMakeLists.txt                # CMake build configuration (C++17)
-├── Makefile                      # One-command build/test/run wrapper
-├── .gitignore                    # Build and artifact exclusions
-├── README.md                     # Project overview and quickstart guide
-├── include/                      # Public modular header interfaces
-│   └── smartcampus/
-│       ├── common/               # Domain enums, TimeSlot, and exceptions
-│       │   ├── Exceptions.hpp    # Custom exception hierarchy
-│       │   └── Types.hpp         # TimeSlot, EnergyAllocation, statuses
-│       ├── models/               # Campus and building polymorphic hierarchy
-│       │   ├── AcademicBuilding.hpp
-│       │   ├── AdministrativeBuilding.hpp
-│       │   ├── Building.hpp      # Abstract base class
-│       │   ├── Campus.hpp        # Composition container
-│       │   ├── Hostel.hpp        # Multilevel inheritance
-│       │   ├── Laboratory.hpp    # Multilevel inheritance
-│       │   └── ResidentialBuilding.hpp
-│       ├── sources/              # Energy generation & storage hierarchy
-│       │   ├── BatterySource.hpp # Storage invariants & SoC tracking
-│       │   ├── EnergySource.hpp  # Abstract base class
-│       │   ├── EnergySupplyManager.hpp # Green-first dispatch coordinator
-│       │   ├── GridSource.hpp    # Grid backup feeder
-│       │   └── SolarSource.hpp   # Intermittent solar PV
-│       ├── policies/             # Strategy pattern allocation algorithms
-│       │   ├── AllocationPolicy.hpp # Pure virtual strategy interface
-│       │   ├── FairSharePolicy.hpp  # Proportional distribution
-│       │   └── PriorityPolicy.hpp   # Two-stage priority ranking
-│       ├── engine/               # Simulation orchestrator
-│       │   ├── AllocationEngine.hpp # Invariant enforcement & workflow
-│       │   └── AllocationRecord.hpp # Audit snapshot and stream formatting
-│       ├── io/                   # Scenario loaders, UI, and report writers
-│       │   ├── ConsoleMenu.hpp      # Interactive console interface
-│       │   ├── ReportGenerator.hpp  # File I/O (text & CSV export)
-│       │   └── ScenarioLoader.hpp   # Factory & CSV parser
-│       ├── utils/                # Generic templates and helper functions
-│       │   └── GenericUtils.hpp     # clampValue<T> & MetricAggregator<T>
-│       └── educational/          # Supplemental syllabus concept isolation
-│           └── OOPDemonstration.hpp # Multiple inheritance mixins & friend
-├── src/                          # Implementation translation units
-│   ├── common/
-│   ├── models/
-│   ├── sources/
-│   ├── policies/
-│   ├── engine/
-│   ├── io/
-│   ├── educational/
-│   └── main.cpp                  # CLI entry point (--demo or interactive)
-├── tests/                        # Zero-dependency automated test suite
-│   ├── TestHarness.hpp           # Lightweight assertion runner
-│   ├── test_buildings.cpp        # Hierarchy and demand tests
-│   ├── test_sources.cpp          # Solar, battery SoC, and grid tests
-│   ├── test_policies.cpp         # Priority vs FairShare algorithm tests
-│   ├── test_engine.cpp           # Strategy switching and workflow tests
-│   ├── test_invariants.cpp       # Conservation of energy tests
-│   ├── test_educational_oop.cpp  # Supplemental syllabus tests
-│   └── test_main.cpp             # Test executable entry point
-├── data/                         # Sample deterministic CSV scenario datasets
-│   ├── campus_buildings.csv
-│   ├── sources_enough_supply.csv
-│   ├── sources_moderate_shortage.csv
-│   ├── sources_severe_shortage.csv
-│   └── sources_solar_surplus.csv
-├── docs/                         # Architectural and grading documentation
-│   ├── ARCHITECTURE.md           # Rendered Mermaid class and flow diagrams
-│   ├── OOP_CONCEPTS.md           # Complete concept-to-code viva table
-│   └── TEAM_TASKS.md             # 4-student role assignment & git workflow
-├── reports/                      # Generated simulation logs and CSV exports
-│   └── .gitkeep
-└── scripts/                      # Helper shell scripts
-    ├── build.sh                  # Shell build script
-    ├── run_demo.sh               # Non-interactive automated demo
-    └── run_tests.sh              # Test runner script
+├── campus.h          # Shared class declarations, structs, and function prototypes
+├── buildings.cpp     # Building classes, constructors, operators, and viva demos (Student 1)
+├── allocation.cpp    # Priority allocation algorithm and table display (Student 2)
+├── files.cpp         # Text and binary file operations, seekg/seekp (Student 3)
+├── main.cpp          # Interactive menu, sample data, exception handling (Student 4)
+├── README.md         # Compilation, syllabus checklist, and viva walkthrough
+└── .gitignore        # Ignores compiled binary and generated data files
 ```
 
 ---
 
-## 2. Quickstart: Building & Running
+## 3. How to Compile & Run
 
-### Prerequisites
-- Modern C++ compiler supporting C++17 or C++20 (Apple Clang 12+, GCC 9+, or MSVC 2019+).
-- CMake (version 3.16 or newer) or standard `make`.
-
-### One-Command Build & Run with Makefile
-```bash
-# 1. Build the complete project and tests
-make
-
-# 2. Run all 218 automated unit and invariant test assertions
-make test
-
-# 3. Launch the non-interactive automated 4-scenario comparative demo
-make demo
-
-# 4. Launch the interactive console user interface
-make run
-```
-
-### Manual Build using CMake directly
-```bash
-cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
-cmake --build build
-
-# Run tests
-./build/campus_energy_tests
-
-# Run interactive simulation
-./build/campus_energy_sim
-
-# Run automated demo
-./build/campus_energy_sim --demo
-```
-
----
-
-## 3. Four Core Simulation Scenarios
-
-The system includes 4 deterministic scenarios verifying edge cases and operational conditions:
-
-| Scenario | Available Supply | Total Demand | Operating Conditions & Outcome |
-| :--- | :---: | :---: | :--- |
-| **1. Enough Supply** | 570.0 kWh | 285.0 kWh | Full midday sun + normal grid feeder. **100% of campus loads satisfied**; battery remains in healthy float. |
-| **2. Moderate Shortage** | 210.0 kWh | 285.0 kWh | Overcast sky + grid brownout (capped at 150 kWh). **All essential loads (145 kWh) met**.<br>• *Priority Policy*: P1 & P2 receive discretionary power; P3 & P4 deferred.<br>• *Fair-Share Policy*: Discretionary power shared proportionally; no building starved. |
-| **3. Severe Shortage** | 55.0 kWh | 285.0 kWh | Night storm (0 solar) + grid blackout (emergency line: 50 kWh). **Supply < essential baseline (145 kWh)**.<br>• Emergency rationing triggered.<br>• *Priority*: Critical labs protected first; lower buildings deferred.<br>• *Fair-Share*: Proportional essential load reduction. |
-| **4. Solar Surplus** | 530.0 kWh | 200.0 kWh | High solar irradiance delivers 300 kWh directly.<br>• **100% solar powered** (0 kWh drawn from grid, 0 emissions).<br>• 100 kWh excess clean solar energy **routed into battery storage**, increasing SoC from 50 kWh to 145 kWh. |
-
----
-
-## 4. Key Object-Oriented Concepts Demonstrated
-
-See [`docs/OOP_CONCEPTS.md`](docs/OOP_CONCEPTS.md) for the exhaustive table containing exact classes, methods, and viva explanations. Highlights include:
-
-- **Inheritance Hierarchies**:
-  - Single: `Building` $\to$ `AcademicBuilding`, `Building` $\to$ `ResidentialBuilding`, `EnergySource` $\to$ `SolarSource`.
-  - Multilevel: `Building` $\to$ `AcademicBuilding` $\to$ `Laboratory`, `Building` $\to$ `ResidentialBuilding` $\to$ `Hostel`.
-- **Runtime Polymorphism**: Virtual destructors, pure virtual interfaces, `override` specifiers, and dynamic dispatch over `std::vector<Building*>`.
-- **Strategy Design Pattern**: `AllocationEngine` associates with abstract `AllocationPolicy`, allowing dynamic runtime policy switching without engine modifications.
-- **Composition & Smart Pointers**: `Campus` exclusively owns `Building` instances using `std::unique_ptr<Building>`, preventing memory leaks and avoiding raw `new`/`delete`.
-- **Generic Templates**: `utils::clampValue<T>` function template and `utils::MetricAggregator<T>` class template for multi-slot energy statistical accumulation.
-- **Operator Overloading**: `TimeSlot::operator<<`, `Building::operator<<`, and `EnergyAllocation::operator+` for natural domain syntax.
-- **Exception Handling**: Custom exception hierarchy inheriting from `std::runtime_error` rejecting negative energy, invalid battery levels, and supply overdraws.
-
----
-
-## 5. Four-Person Team Task Division
-
-See [`docs/TEAM_TASKS.md`](docs/TEAM_TASKS.md) for individual files, inputs/outputs, peer reviews, and viva questions.
-
-| Role | Lead | Domain & Responsibilities | Branch Name |
-| :--- | :--- | :--- | :--- |
-| **Role 1** | Student 1 | Campus & building polymorphic hierarchy, demand validation, static counters, registry. | `feature/campus-buildings` |
-| **Role 2** | Student 2 | Solar, battery, grid sources, state of charge (SoC) tracking, green dispatch manager. | `feature/energy-sources` |
-| **Role 3** | Student 3 | Allocation engine, Priority & Fair Share policies, invariant safety checks, record keeping. | `feature/allocation-engine` |
-| **Role 4** | Student 4 *(Lead)* | Application CLI menu, CSV scenario loading, report generation, CMake, integration tests. | `feature/app-and-reporting` |
-
----
-
-## 6. How to Publish This Repository to GitHub
-
-If you wish to host this shared repository on GitHub for your project team, run these commands:
+### Direct `g++` Compilation Command
+Compile directly in your terminal using standard `g++` (C++17):
 
 ```bash
-# Option 1: Authenticate with GitHub CLI and create remote repository
-gh auth login
-gh repo create smart-campus-energy-allocation --public --source=. --remote=origin --push
-
-# Option 2: Push to an existing empty GitHub repository
-git remote add origin https://github.com/<your-username>/smart-campus-energy-allocation.git
-git branch -M main
-git push -u origin main
+g++ -std=c++17 -Wall -Wextra main.cpp buildings.cpp allocation.cpp files.cpp -o campus_sim
 ```
+
+### Run Interactive Console Menu
+```bash
+./campus_sim
+```
+
+### Run Automated 2-Minute Demo Mode
+```bash
+./campus_sim --demo
+```
+
+*(Note: Data files `allocation_report.txt` and `allocations.dat` are created only when the program runs and are excluded from git).*
+
+---
+
+## 4. Key Syllabus Theoretical Concepts
+
+### Non-Modular vs. Modular vs. OOP Approach (Unit 1)
+- **Non-Modular (Monolithic):** Everything is written inside a single huge `main()` function with global variables. Hard to debug, impossible to maintain.
+- **Modular (Procedural):** Code is split into separate functions and translation units (`.cpp` files). Data and functions are separate; data is still vulnerable to unintentional modification.
+- **Object-Oriented Programming (OOP):** Binds data and methods into **classes** with access control (`private`, `public`). Encapsulates state, models real-world entities through inheritance, and enables runtime flexibility through polymorphism.
+
+### Diamond Inheritance & Virtual Base Class (Unit 3)
+```
+             Building (virtual base class)
+              /      \
+  MedicalFacility   EmergencyUnit
+              \      /
+            CampusClinic
+```
+- **The Problem:** In multiple inheritance, if `CampusClinic` inherits from both `MedicalFacility` and `EmergencyUnit`, and both inherit from `Building`, `CampusClinic` would receive **two separate copies** of `Building` (duplicate `id`, `name`, `priority`), causing compiler ambiguity.
+- **The Solution:** By declaring `virtual public Building` in both intermediate classes, C++ guarantees that only **one shared copy** of `Building` exists inside `CampusClinic`.
+
+### C++ Stream Hierarchy & Formatted Output (Unit 4)
+- **Base Class:** `ios_base` and `ios` manage stream state and formatting flags.
+- **Input/Output Streams:** `istream` (for reading, e.g. `cin`) and `ostream` (for writing, e.g. `cout`).
+- **File Streams:** `ifstream` (inherits from `istream` for reading files), `ofstream` (inherits from `ostream` for writing files), and `fstream` (inherits from `iostream` for simultaneous read/write).
+- **String Streams:** `stringstream` (inherits from `iostream` to format strings in memory).
+- **Formatting:** `setw(width)` sets field column widths, `fixed` disables scientific notation, and `setprecision(1)` fixes decimals to 1 decimal place.
+
+### Why Fixed-Size Binary Records for Random Access (`seekg`/`seekp`)? (Unit 4)
+- Text files contain lines of varying lengths, so jumping directly to line $N$ requires reading all preceding lines sequentially ($O(N)$).
+- A fixed-size binary struct `BuildingRecord` occupies an exact, constant number of bytes (`sizeof(BuildingRecord) = 64` bytes).
+- To read or update record $N$, the program jumps directly in $O(1)$ constant time using:
+  $$\text{Byte Offset} = N \times \text{sizeof}(\text{BuildingRecord})$$
+  - `file.seekg(offset, ios::beg)` positions the get-pointer for instant reading.
+  - `file.seekp(offset, ios::beg)` positions the put-pointer for instant in-place updating.
+
+### Why Shortages Are NOT Exceptions (Unit 5)
+- An energy shortage (supply < demand) is a **normal, expected operational condition** of an energy allocation system, not an exceptional system failure. It is handled by the priority allocation logic.
+- **Exceptions** are strictly reserved for genuine errors: invalid user inputs (negative values) and file I/O failures (unable to open a file).
+
+---
+
+## 5. Comprehensive Syllabus Checklist Table
+
+| Unit | Syllabus Concept | File & Function / Class | One-Sentence Viva Explanation |
+| :---: | :--- | :--- | :--- |
+| **1** | Classes, objects, access specifiers (`private`, `protected`, `public`) | [`campus.h`](campus.h), `Building` | `Building` hides private `id` and `name`, exposes protected `priority` to derived classes, and provides public methods. |
+| **1** | Pointers vs. Reference variables | [`buildings.cpp`](buildings.cpp), `demonstratePointersAndRefs()` | A pointer holds a memory address and can be reseated or null; a reference is an immutable alias to an existing object. |
+| **1** | Static data member & static function | [`campus.h`](campus.h), `Building::totalBuildingsCreated`, `getTotalBuildings()` | Tracks total building objects instantiated across the entire program without needing a specific object instance. |
+| **1** | Inline function | [`campus.h`](campus.h), `Building::getRemainingKwh()` | Inline function hints compiler to substitute body directly at call site to eliminate function call overhead. |
+| **1** | Function overloading | [`allocation.cpp`](allocation.cpp), `calculateTotalSupply()` | Overloaded for `double` parameters and `EnergyAmount` objects, resolved at compile-time by parameter types. |
+| **2** | Dynamic memory (`new` and `delete`) | [`buildings.cpp`](buildings.cpp), `demonstrateNewDelete()` | Allocates an object on the heap with `new`, destroys it with `delete`, and sets pointer to `nullptr` to avoid dangling pointers. |
+| **2** | Default, Parameterized, Copy Constructor & Destructor | [`campus.h`](campus.h), [`buildings.cpp`](buildings.cpp), `EnergyAmount` | Shows complete lifecycle: default sets 0, parameterized initializes kwh, copy copies value, destructor cleans up. |
+| **2** | `this` pointer & Initializer list | [`buildings.cpp`](buildings.cpp), `Building::Building(...)` | Initializer list directly initializes member fields before constructor body; `this` pointer disambiguates object scope. |
+| **2** | Friend function | [`campus.h`](campus.h), `inspectEmergencyReserve(const CampusClinic&)` | Non-member function granted explicit access to private clinic member `secretBackupGeneratorKw`. |
+| **2** | Friend class | [`campus.h`](campus.h), `EnergyAuditor::auditBuilding(const Building&)` | Dedicated auditing class granted access to inspect private and protected members of `Building`. |
+| **2** | Operator Overloading (Unary & Binary) | [`campus.h`](campus.h), [`buildings.cpp`](buildings.cpp), `EnergyAmount` | Unary `!` checks if energy is zero; binary `+` adds two energy quantities; `<<` formats stream output. |
+| **2** | Array of objects & Dynamic pointer | [`main.cpp`](main.cpp), `Building* campus[3]` | Array of base class pointers storing addresses of dynamically allocated or concrete derived building objects. |
+| **3** | Single Inheritance | [`campus.h`](campus.h), `ClassroomBlock : public Building` | `ClassroomBlock` inherits directly from `Building`, adding classroom counts. |
+| **3** | Multilevel Inheritance | [`campus.h`](campus.h), `Building` $\to$ `ResidentialBuilding` $\to$ `Hostel` | `Hostel` inherits from `ResidentialBuilding`, which in turn inherits from `Building`. |
+| **3** | Hierarchical Inheritance | [`campus.h`](campus.h), `Building` inherited by multiple classes | `ClassroomBlock`, `ResidentialBuilding`, and `MedicalFacility` all branch from base `Building`. |
+| **3** | Multiple Inheritance | [`campus.h`](campus.h), `CampusClinic : MedicalFacility, EmergencyUnit` | `CampusClinic` inherits features from both `MedicalFacility` (doctors) and `EmergencyUnit` (ambulances). |
+| **3** | Hybrid / Diamond Inheritance with `virtual` base | [`campus.h`](campus.h), `MedicalFacility`, `EmergencyUnit` $\to$ `CampusClinic` | Declaring `virtual public Building` prevents duplicate copies of `Building` inside `CampusClinic`. |
+| **3** | Derived constructor passing args to base constructor | [`buildings.cpp`](buildings.cpp), `CampusClinic::CampusClinic(...)` | Derived constructor explicitly passes ID, name, and demands to virtual base `Building` and intermediate parents. |
+| **3** | Constructor/Destructor call order | [`buildings.cpp`](buildings.cpp), `demonstrateConstructorDestructorOrder()` | Constructors run from base to derived; destructors execute in exact reverse order when object leaves scope. |
+| **3** | Pure virtual function & Abstract class | [`campus.h`](campus.h), `virtual void showDetails() const = 0;` | `Building` cannot be instantiated directly, forcing derived classes to provide their own implementation. |
+| **3** | Runtime Polymorphism (Late Binding) | [`allocation.cpp`](allocation.cpp), `Building* b` calling overridden methods | Base pointer calls `b->showDetails()` dynamically resolved at runtime through the virtual method table (vtable). |
+| **3** | Virtual Destructor | [`campus.h`](campus.h), `virtual ~Building();` | Guarantees that deleting an object through a `Building*` pointer safely invokes derived destructors first. |
+| **4** | Stream hierarchy (`ifstream`, `ofstream`, `fstream`, `stringstream`) | [`files.cpp`](files.cpp) | Demonstrates writing with `ofstream`, reading with `ifstream`, read/write with `fstream`, and formatting with `stringstream`. |
+| **4** | Random file access (`seekg` and `seekp`) | [`files.cpp`](files.cpp), `readBinaryRecordAt()`, `updateBinaryRecordAt()` | `seekg` moves read pointer and `seekp` moves write pointer to `index * sizeof(Record)` for $O(1)$ access. |
+| **5** | Exception handling (`try`, `throw`, `catch`) | [`main.cpp`](main.cpp), [`allocation.cpp`](allocation.cpp) | Rejects negative inputs and file failures using `throw invalid_argument` and catches in `main()`. |
+| **5** | `catch (...)` and re-throw (`throw;`) | [`main.cpp`](main.cpp), `demonstrateCatchAllAndRethrow()` | Catches any unknown exception using `catch (...)`, logs the incident, and re-throws it to the caller with `throw;`. |
+
+---
+
+## 6. Four-Student Work Division
+
+| Student | Assigned File | Git Branch | Responsibilities & Functions | Peer Reviewer |
+| :--- | :--- | :--- | :--- | :--- |
+| **Student 1** | `buildings.cpp` & `campus.h` | `feature/buildings` | • Implement `EnergyAmount` (constructors, operators `!`, `+`, `-`, `<<`).<br>• Implement `Building`, `ClassroomBlock`, `Hostel`, `CampusClinic`.<br>• Implement Diamond inheritance and static building counter.<br>• Implement friend function and friend class. | Student 2 |
+| **Student 2** | `allocation.cpp` | `feature/allocation` | • Overload `calculateTotalSupply()` for `double` and `EnergyAmount`.<br>• Implement `allocateCampusEnergy()` (sort by priority, allocate until supply runs out).<br>• Input validation (reject negative supply).<br>• Implement `displayAllocationTable()`. | Student 3 |
+| **Student 3** | `files.cpp` | `feature/files` | • Implement `saveTextReport()` and `loadTextReport()`.<br>• Implement binary records with `BuildingRecord`.<br>• Implement `readBinaryRecordAt()` using `seekg()`.<br>• Implement `updateBinaryRecordAt()` using `seekp()`.<br>• Implement `demonstrateStringStream()`. | Student 4 |
+| **Student 4** | `main.cpp` & `README.md` | `feature/main-integration` | • Implement interactive console menu.<br>• Set up 3 campus buildings array `Building* campus[3]`.<br>• Implement `demonstrateCatchAllAndRethrow()`.<br>• Add automated `--demo` flag.<br>• Verify build with `g++` and run all 3 test scenarios. | Student 1 |
+
+---
+
+## 7. Results of the Three Test Scenarios
+
+### Scenario 1: Shortage (Supply 90 kWh < Demand 120 kWh)
+- **Inputs:** Solar = 40.0 kWh, Grid = 50.0 kWh $\to$ **Total Supply = 90.0 kWh**.
+- **Demand:** Clinic (40) + Classrooms (50) + Hostel (30) = **120.0 kWh**.
+- **Output:**
+  - **Campus Clinic (P1):** Requested 40.0 kWh $\to$ **Allocated 40.0 kWh** (FULLY MET, 0 Remaining).
+  - **Classroom Block (P2):** Requested 50.0 kWh $\to$ **Allocated 50.0 kWh** (FULLY MET, 0 Remaining).
+  - **Mandela Hostel (P3):** Requested 30.0 kWh $\to$ **Allocated 0.0 kWh** (DEFERRED, 30.0 Remaining).
+- **Result:** Priority rule clearly demonstrated. Critical clinic and classrooms are satisfied; hostel load deferred.
+
+### Scenario 2: Surplus (Supply 150 kWh > Demand 120 kWh)
+- **Inputs:** Solar = 80.0 kWh, Grid = 70.0 kWh $\to$ **Total Supply = 150.0 kWh**.
+- **Demand:** 120.0 kWh.
+- **Output:**
+  - **Campus Clinic (P1):** Allocated **40.0 kWh** (FULLY MET).
+  - **Classroom Block (P2):** Allocated **50.0 kWh** (FULLY MET).
+  - **Mandela Hostel (P3):** Allocated **30.0 kWh** (FULLY MET).
+- **Result:** 100% of campus building demands satisfied.
+
+### Scenario 3: Negative Input Exception Handling
+- **Input:** Solar = -20.0 kWh.
+- **Output:**
+  ```text
+  [INPUT ERROR] Solar energy cannot be negative: -20.000000
+  ```
+- **Result:** Caught by `catch (const invalid_argument& e)` in `main()`. Program rejects bad input gracefully without crashing.
+
+---
+
+## 8. Two-Minute Presentation & Viva Walkthrough Script
+
+Use this exact 2-minute script when presenting to your examiner:
+
+- **Minute 0:00 - 0:30 (Student 1):**  
+  > *"Respected examiner, our project models a campus with three facilities: a Clinic, a Classroom Block, and a Hostel. I implemented `campus.h` and `buildings.cpp`. We demonstrate all five forms of inheritance: Single in `ClassroomBlock`, Multilevel in `Hostel`, and a Diamond hybrid hierarchy where `CampusClinic` inherits from `MedicalFacility` and `EmergencyUnit` with `virtual public Building` to eliminate ambiguity. We also implemented static counters, virtual destructors, and operator overloading on our `EnergyAmount` class."*
+
+- **Minute 0:30 - 1:00 (Student 2):**  
+  > *"I developed `allocation.cpp`. Our allocation algorithm is straightforward: 'Sort by priority, then give each building as much as possible until the supply runs out.' In our shortage scenario where supply is 90 kWh and demand is 120 kWh, the Clinic with priority P1 receives its full 40 kWh, Classrooms with P2 receive 50 kWh, and the Hostel with P3 receives 0 kWh. I also demonstrated compile-time polymorphism through function overloading."*
+
+- **Minute 1:00 - 1:30 (Student 3):**  
+  > *"I developed `files.cpp`. We demonstrate the full C++ stream hierarchy using `ifstream`, `ofstream`, `fstream`, and `stringstream`. For binary operations, we used a fixed-size `BuildingRecord` struct. Because the record size is fixed at 64 bytes, we achieve $O(1)$ random access: `file.seekg(offset)` jumps directly to any record to read it, and `file.seekp(offset)` updates it in-place."*
+
+- **Minute 1:30 - 2:00 (Student 4):**  
+  > *"I integrated the system in `main.cpp`. We use base class pointers `Building* campus[3]` to call overridden methods at runtime, demonstrating late binding. We handle errors defensively using `try`, `throw`, and `catch`, rejecting negative inputs and missing files, and demonstrating `catch(...)` with `throw;` for re-throwing. Let us now run `./campus_sim --demo` to see all three scenarios live."*

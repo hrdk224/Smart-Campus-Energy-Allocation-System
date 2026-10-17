@@ -1,4 +1,0 @@
-# Type,ID,Name,CapacityOrPowerKw,FactorOrSoC
-Solar,SOL-01,Rooftop Solar Array,100.0,0.0
-Battery,BAT-01,Campus BESS Unit,200.0,25.0
-Grid,GRD-01,Substation Main Feeder,25.0,1.0
