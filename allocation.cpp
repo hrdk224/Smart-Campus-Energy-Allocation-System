@@ -6,12 +6,7 @@
 
 using namespace std;
 
-// ============================================================================
-// Function Overloading (Unit 1)
-// Demonstrates compile-time polymorphism
-// ============================================================================
-
-// Overload 1: Takes primitive doubles
+// Function Overloading
 double calculateTotalSupply(double solarKwh, double gridKwh) {
     if (solarKwh < 0.0) {
         throw invalid_argument("Solar energy cannot be negative: " + to_string(solarKwh));
@@ -22,36 +17,24 @@ double calculateTotalSupply(double solarKwh, double gridKwh) {
     return solarKwh + gridKwh;
 }
 
-// Overload 2: Takes EnergyAmount objects
 EnergyAmount calculateTotalSupply(const EnergyAmount& solar, const EnergyAmount& grid) {
-    // Uses operator+ overloaded on EnergyAmount
     return solar + grid;
 }
 
-// ============================================================================
-// Core Priority Allocation Algorithm (Unit 2 / Unit 3)
-//
-// RULE TO SAY ALOUD IN VIVA:
-// "Sort by priority, then give each building as much as possible until the supply runs out."
-// For equal priorities, the original order is strictly preserved (stable sorting).
-// ============================================================================
 void allocateCampusEnergy(Building* buildings[], int count, double totalSupplyKwh) {
     if (totalSupplyKwh < 0.0) {
         throw invalid_argument("Total supply cannot be negative: " + to_string(totalSupplyKwh));
     }
 
-    // Reset all buildings' allocations first
     for (int i = 0; i < count; ++i) {
         buildings[i]->setAllocatedKwh(0.0);
     }
 
-    // Create an index array to sort buildings while preserving original order for ties
     vector<Building*> sortedBuildings;
     for (int i = 0; i < count; ++i) {
         sortedBuildings.push_back(buildings[i]);
     }
 
-    // Stable sort: sorts by priority ascending (1 is highest priority), preserves original index on tie
     stable_sort(sortedBuildings.begin(), sortedBuildings.end(),
         [](const Building* a, const Building* b) {
             return a->getPriority() < b->getPriority();
@@ -60,7 +43,6 @@ void allocateCampusEnergy(Building* buildings[], int count, double totalSupplyKw
 
     double availableEnergy = totalSupplyKwh;
 
-    // Distribute available energy in priority order
     for (Building* b : sortedBuildings) {
         if (availableEnergy <= 0.0) {
             b->setAllocatedKwh(0.0);
@@ -69,20 +51,15 @@ void allocateCampusEnergy(Building* buildings[], int count, double totalSupplyKw
 
         double requested = b->getRequestedKwh();
         if (availableEnergy >= requested) {
-            // Full demand can be satisfied
             b->setAllocatedKwh(requested);
             availableEnergy -= requested;
         } else {
-            // Partial demand satisfied: give all remaining energy
             b->setAllocatedKwh(availableEnergy);
             availableEnergy = 0.0;
         }
     }
 }
 
-// ============================================================================
-// Formatted Display Table (Unit 4: Formatted output with setw, fixed, precision)
-// ============================================================================
 void displayAllocationTable(Building* buildings[], int count, double totalSupplyKwh) {
     cout << "\n================================================================================\n";
     cout << "          SMART CAMPUS ENERGY ALLOCATION REPORT (CURRENT TIME SLOT)            \n";
