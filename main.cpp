@@ -104,6 +104,15 @@ int main(int argc, char* argv[]) {
             demonstrateNewDelete();
             demonstrateConstructorDestructorOrder();
 
+            demonstrateStringStream(*campus[0]);
+
+            // Unit 5: catch(...) and re-throw demonstration
+            try {
+                demonstrateCatchAllAndRethrow();
+            } catch (const exception& e) {
+                cout << "  [Step 4] Outer main() caught re-thrown exception: " << e.what() << "\n";
+            }
+
             cout << "\n====================================================================\n";
             cout << " AUTOMATED RUN COMPLETED SUCCESSFULLY!\n";
             cout << "====================================================================\n";
@@ -120,7 +129,7 @@ int main(int argc, char* argv[]) {
         cout << "           SMART CAMPUS ENERGY ALLOCATION SYSTEM MENU               \n";
         cout << "====================================================================\n";
         cout << " 1. Show Built-in Shortage Scenario (Solar=40 kWh, Grid=50 kWh -> 90 kWh)\n";
-        cout << " 2. Show Surplus Scenario (Solar=80 kWh, Grid=60 kWh -> 140 kWh)\n";
+        cout << " 2. Show Surplus Scenario (Solar=80 kWh, Grid=70 kWh -> 150 kWh)\n";
         cout << " 3. Enter Custom Solar and Grid Supply (Test Inputs & Exceptions)\n";
         cout << " 4. Save and View Text Report (allocation_report.txt)\n";
         cout << " 5. Binary File Operations & Random Access (seekg & seekp in allocations.dat)\n";
@@ -151,7 +160,7 @@ int main(int argc, char* argv[]) {
                 case 2: {
                     // Surplus scenario
                     solarSupply = 80.0;
-                    gridSupply = 60.0;
+                    gridSupply = 70.0;
                     totalSupply = calculateTotalSupply(solarSupply, gridSupply);
                     allocateCampusEnergy(campus, buildingCount, totalSupply);
                     displayAllocationTable(campus, buildingCount, totalSupply);
